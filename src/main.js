@@ -4,6 +4,7 @@ const {
   nativeImage, screen
 } = require('electron');
 const path = require('path');
+const { execSync } = require('child_process');
 const store = require('./store');
 const { translate } = require('./translator');
 
@@ -125,10 +126,21 @@ async function handleHotkey() {
   hotkeyBusy = true;
 
   try {
-    const text = clipboard.readText();
+    const previous = clipboard.readText();
 
-    if (!text || !text.trim()) {
-      console.log('Pop Translate: clipboard is empty — copy text first (Cmd+C), then press the hotkey');
+    try {
+      execSync(`osascript -e 'tell application "System Events" to keystroke "c" using command down'`);
+    } catch {
+      console.error('Pop Translate: Accessibility permission denied — add Terminal.app to System Settings → Privacy & Security → Accessibility');
+      return;
+    }
+
+    await new Promise(r => setTimeout(r, 150));
+    const text = clipboard.readText();
+    clipboard.writeText(previous);
+
+    if (!text || !text.trim() || text === previous) {
+      console.log('Pop Translate: no text selected — select text before pressing the hotkey');
       return;
     }
 
