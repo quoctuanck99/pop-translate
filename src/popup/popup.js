@@ -26,11 +26,13 @@ window.api.onTranslationResult((data) => {
   btnCopy.style.display = 'inline';
 });
 
+let copyResetTimer = null;
 document.getElementById('btn-copy').addEventListener('click', () => {
   window.api.copyText(translatedText);
   const btn = document.getElementById('btn-copy');
   btn.textContent = '✓ Copied';
-  setTimeout(() => { btn.textContent = '📋 Copy'; }, 1500);
+  if (copyResetTimer) clearTimeout(copyResetTimer);
+  copyResetTimer = setTimeout(() => { btn.textContent = '📋 Copy'; }, 1500);
 });
 
 document.getElementById('btn-dismiss').addEventListener('click', () => {

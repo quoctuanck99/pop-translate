@@ -39,12 +39,18 @@ hotkeyInput.addEventListener('keydown', (e) => {
   if (e.altKey) parts.push('Alt');
   if (e.shiftKey) parts.push('Shift');
 
-  // Use e.code for letter keys (KeyA → A), e.key for others
+  // Map DOM key names to Electron globalShortcut key names
+  const SPECIAL_KEY_MAP = {
+    Enter: 'Return', ' ': 'Space', ArrowUp: 'Up', ArrowDown: 'Down',
+    ArrowLeft: 'Left', ArrowRight: 'Right', Escape: 'Escape',
+    Tab: 'Tab', Backspace: 'Backspace', Delete: 'Delete'
+  };
+  // Use e.code for letter keys (KeyA → A), map special keys, fallback to e.key
   const keyName = e.code.startsWith('Key')
     ? e.code.slice(3)
     : e.key.length === 1
       ? e.key.toUpperCase()
-      : e.key;
+      : SPECIAL_KEY_MAP[e.key] || e.key;
 
   parts.push(keyName);
   hotkeyInput.value = parts.join('+');
