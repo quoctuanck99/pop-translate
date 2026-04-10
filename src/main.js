@@ -15,7 +15,6 @@ let tray = null;
 let popupWindow = null;
 let settingsWindow = null;
 let popupReady = false;
-let dismissTimer = null;
 let hotkeyBusy = false;
 let lastFrontApp = '';
 
@@ -43,7 +42,7 @@ function createPopupWindow() {
     height: 180,
     show: false,
     frame: false,
-    resizable: false,
+    resizable: true,
     alwaysOnTop: true,
     skipTaskbar: true,
     backgroundColor: '#252540',
@@ -57,7 +56,6 @@ function createPopupWindow() {
   popupWindow.loadFile(path.join(__dirname, 'popup/popup.html'));
   popupWindow.setVisibleOnAllWorkspaces(true, { visibleOnFullScreen: true });
   popupWindow.webContents.on('did-finish-load', () => { popupReady = true; });
-  popupWindow.on('blur', hidePopup);
 }
 
 function showPopupNearCursor() {
@@ -76,7 +74,6 @@ function showPopupNearCursor() {
 }
 
 function hidePopup() {
-  if (dismissTimer) clearTimeout(dismissTimer);
   if (popupWindow && !popupWindow.isDestroyed()) popupWindow.hide();
 }
 
@@ -84,11 +81,6 @@ function sendToPopup(channel, payload) {
   if (popupWindow && !popupWindow.isDestroyed()) {
     popupWindow.webContents.send(channel, payload);
   }
-}
-
-function startDismissTimer() {
-  if (dismissTimer) clearTimeout(dismissTimer);
-  dismissTimer = setTimeout(hidePopup, 10000);
 }
 
 // ─── Settings Window ─────────────────────────────────────────────────────────
@@ -171,7 +163,6 @@ async function handleHotkey() {
     }
 
     showPopupNearCursor();
-    startDismissTimer();
     sendToPopup('translation-result', { loading: true });
 
     const settings = store.store;

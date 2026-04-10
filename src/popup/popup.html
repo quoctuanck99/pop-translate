@@ -4,26 +4,38 @@
   <meta charset="UTF-8">
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
+    html, body {
+      height: 100%;
+    }
     body {
       font-family: -apple-system, BlinkMacSystemFont, sans-serif;
       background: #252540;
       color: #e0e0e0;
       border-radius: 10px;
       overflow: hidden;
+      display: flex;
+      flex-direction: column;
     }
-    .card { padding: 14px 16px; }
+    .card {
+      padding: 14px 16px;
+      display: flex;
+      flex-direction: column;
+      flex: 1;
+      overflow: hidden;
+    }
     .lang-label {
       font-size: 10px;
       color: #888;
       text-transform: uppercase;
       letter-spacing: 1px;
       margin-bottom: 8px;
+      flex-shrink: 0;
     }
     #content {
       font-size: 14px;
       line-height: 1.5;
       margin-bottom: 12px;
-      max-height: 120px;
+      flex: 1;
       overflow-y: auto;
     }
     #content.translation { color: #e0e0e0; user-select: text; }
