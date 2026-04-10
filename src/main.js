@@ -129,7 +129,7 @@ async function handleHotkey() {
     const previous = clipboard.readText();
 
     try {
-      execSync(`osascript -e 'tell application "System Events" to keystroke "c" using command down'`);
+      execSync(`osascript -e 'tell application "System Events" to tell (first process whose frontmost is true) to keystroke "c" using command down'`);
     } catch {
       console.error('Pop Translate: Accessibility permission denied — add Terminal.app to System Settings → Privacy & Security → Accessibility');
       return;
