@@ -137,7 +137,10 @@ async function handleHotkey() {
       clipboard.writeText(previous);
     }
 
-    if (!selected || !selected.trim() || selected === previous) return;
+    if (!selected || !selected.trim() || selected === previous) {
+      console.log('Pop Translate: no new text detected — select text before pressing the hotkey');
+      return;
+    }
 
     showPopupNearCursor();
     startDismissTimer();

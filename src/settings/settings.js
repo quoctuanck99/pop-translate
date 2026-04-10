@@ -22,10 +22,21 @@ async function loadSettings() {
 
 const hotkeyInput = document.getElementById('hotkey');
 
+let previousHotkeyValue = '';
+
 hotkeyInput.addEventListener('click', () => {
+  previousHotkeyValue = hotkeyInput.value;
   hotkeyInput.value = 'Press your shortcut...';
   hotkeyInput.classList.add('recording');
   recordingHotkey = true;
+});
+
+hotkeyInput.addEventListener('blur', () => {
+  if (recordingHotkey) {
+    hotkeyInput.value = previousHotkeyValue;
+    hotkeyInput.classList.remove('recording');
+    recordingHotkey = false;
+  }
 });
 
 hotkeyInput.addEventListener('keydown', (e) => {
