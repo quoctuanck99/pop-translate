@@ -4,13 +4,37 @@
   "description": "macOS menu bar translation utility",
   "main": "src/main.js",
   "scripts": {
-    "start": "electron ."
+    "start": "electron .",
+    "build": "electron-builder --mac --universal",
+    "build:arm64": "electron-builder --mac --arm64",
+    "build:x64": "electron-builder --mac --x64"
+  },
+  "build": {
+    "appId": "com.quoctuanck99.pop-translate",
+    "productName": "Pop Translate",
+    "files": [
+      "src/**/*",
+      "package.json"
+    ],
+    "mac": {
+      "category": "public.app-category.productivity",
+      "target": [
+        { "target": "dmg", "arch": ["universal"] }
+      ],
+      "extendInfo": {
+        "LSUIElement": true
+      }
+    },
+    "dmg": {
+      "title": "Pop Translate"
+    }
   },
   "dependencies": {
     "electron-store": "^8.2.0",
     "openai": "^4.0.0"
   },
   "devDependencies": {
-    "electron": "^34.0.0"
+    "electron": "^34.0.0",
+    "electron-builder": "^26.8.1"
   }
 }
