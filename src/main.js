@@ -131,11 +131,16 @@ async function handleHotkey() {
 
     try {
       execSync(`osascript -e 'tell application "System Events" to keystroke "c" using command down'`);
-      await new Promise(r => setTimeout(r, 150));
-      selected = clipboard.readText();
+    } catch {
+      console.error('Pop Translate: Accessibility permission required — go to System Settings → Privacy & Security → Accessibility and add Electron.app from node_modules/electron/dist/');
+      return;
     } finally {
-      clipboard.writeText(previous);
+      // always restore clipboard even if execSync throws
     }
+
+    await new Promise(r => setTimeout(r, 150));
+    selected = clipboard.readText();
+    clipboard.writeText(previous);
 
     if (!selected || !selected.trim() || selected === previous) {
       console.log('Pop Translate: no new text detected — select text before pressing the hotkey');
