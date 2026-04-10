@@ -17,6 +17,7 @@ let settingsWindow = null;
 let popupReady = false;
 let dismissTimer = null;
 let hotkeyBusy = false;
+let lastFrontApp = '';
 
 // ─── Tray ────────────────────────────────────────────────────────────────────
 
@@ -112,6 +113,22 @@ function openSettings() {
   settingsWindow.on('closed', () => { settingsWindow = null; });
 }
 
+// ─── Front App Poller ────────────────────────────────────────────────────────
+
+function startFrontAppPoller() {
+  const poll = () => {
+    try {
+      const name = execSync(
+        `osascript -e 'tell application "System Events" to get name of first process whose frontmost is true'`,
+        { timeout: 400 }
+      ).toString().trim();
+      if (name && name !== 'Electron') lastFrontApp = name;
+    } catch {}
+  };
+  poll();
+  setInterval(poll, 500);
+}
+
 // ─── Global Hotkey ───────────────────────────────────────────────────────────
 
 function registerHotkey() {
@@ -126,14 +143,25 @@ async function handleHotkey() {
   hotkeyBusy = true;
 
   try {
+    if (!lastFrontApp) {
+      console.log('Pop Translate: no foreground app detected yet');
+      return;
+    }
+
     let text;
     try {
-      // Read selected text directly via macOS Accessibility API — no clipboard needed
-      text = execSync(
-        `osascript -l JavaScript -e 'ObjC.import("AppKit"); var s=$.AXUIElementCreateSystemWide(); var f=Ref(); if($.AXUIElementCopyAttributeValue(s,"AXFocusedUIElement",f)!==0){""}else{var t=Ref(); if($.AXUIElementCopyAttributeValue(f[0],"AXSelectedText",t)!==0){""}else{ObjC.unwrap(t[0])||""}}'`
-      ).toString().trim();
+      const previous = clipboard.readText();
+      execSync(
+        `osascript -e 'tell application "System Events" to tell process "${lastFrontApp}" to keystroke "c" using command down'`,
+        { timeout: 500 }
+      );
+      await new Promise(r => setTimeout(r, 200));
+      const copied = clipboard.readText();
+      // Restore original clipboard content
+      clipboard.writeText(previous);
+      text = copied;
     } catch (e) {
-      console.error('Pop Translate: failed to read selected text:', e.message);
+      console.error('Pop Translate: failed to simulate Cmd+C:', e.message);
       return;
     }
 
@@ -189,6 +217,7 @@ app.whenReady().then(() => {
   createTray();
   createPopupWindow();
   registerHotkey();
+  startFrontAppPoller();
 });
 
 app.on('will-quit', () => globalShortcut.unregisterAll());
