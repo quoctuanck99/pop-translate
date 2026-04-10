@@ -16,6 +16,7 @@ let popupWindow = null;
 let settingsWindow = null;
 let popupReady = false;
 let dismissTimer = null;
+let hotkeyBusy = false;
 
 // ─── Tray ────────────────────────────────────────────────────────────────────
 
@@ -53,6 +54,7 @@ function createPopupWindow() {
   });
 
   popupWindow.loadFile(path.join(__dirname, 'popup/popup.html'));
+  popupWindow.setVisibleOnAllWorkspaces(true, { visibleOnFullScreen: true });
   popupWindow.webContents.on('did-finish-load', () => { popupReady = true; });
   popupWindow.on('blur', hidePopup);
 }
@@ -75,6 +77,12 @@ function showPopupNearCursor() {
 function hidePopup() {
   if (dismissTimer) clearTimeout(dismissTimer);
   if (popupWindow && !popupWindow.isDestroyed()) popupWindow.hide();
+}
+
+function sendToPopup(channel, payload) {
+  if (popupWindow && !popupWindow.isDestroyed()) {
+    popupWindow.webContents.send(channel, payload);
+  }
 }
 
 function startDismissTimer() {
@@ -114,45 +122,43 @@ function registerHotkey() {
 }
 
 async function handleHotkey() {
-  if (!popupReady) return;
-
-  const previous = clipboard.readText();
-
-  try {
-    execSync(`osascript -e 'tell application "System Events" to keystroke "c" using command down'`);
-  } catch {
-    return;
-  }
-
-  // Wait briefly for clipboard to update
-  await new Promise(r => setTimeout(r, 150));
-
-  const selected = clipboard.readText();
-
-  // Restore original clipboard
-  clipboard.writeText(previous);
-
-  if (!selected || !selected.trim() || selected === previous) return;
-
-  showPopupNearCursor();
-  startDismissTimer();
-  popupWindow.webContents.send('translation-result', { loading: true });
-
-  const settings = store.store;
+  if (!popupReady || hotkeyBusy) return;
+  hotkeyBusy = true;
 
   try {
-    const translation = await translate(selected, settings);
-    const src = settings.sourceLang === 'auto' ? 'Auto' : settings.sourceLang.toUpperCase();
-    const tgt = settings.targetLang.toUpperCase();
-    popupWindow.webContents.send('translation-result', {
-      translation,
-      langLabel: `${src} → ${tgt}`
-    });
-  } catch (err) {
-    const message = err.message === 'NO_API_KEY'
-      ? 'Please set your API key in Settings'
-      : (err.message || 'Translation failed');
-    popupWindow.webContents.send('translation-result', { error: message });
+    const previous = clipboard.readText();
+    let selected;
+
+    try {
+      execSync(`osascript -e 'tell application "System Events" to keystroke "c" using command down'`);
+      await new Promise(r => setTimeout(r, 150));
+      selected = clipboard.readText();
+    } finally {
+      clipboard.writeText(previous);
+    }
+
+    if (!selected || !selected.trim() || selected === previous) return;
+
+    showPopupNearCursor();
+    startDismissTimer();
+    sendToPopup('translation-result', { loading: true });
+
+    const settings = store.store;
+
+    try {
+      const translation = await translate(selected, settings);
+      const src = settings.sourceLang === 'auto' ? 'Auto' : settings.sourceLang.toUpperCase();
+      const tgt = settings.targetLang.toUpperCase();
+      sendToPopup('translation-result', { translation, langLabel: `${src} → ${tgt}` });
+    } catch (err) {
+      console.error('Translation error:', err);
+      const message = err.message === 'NO_API_KEY'
+        ? 'Please set your API key in Settings'
+        : (err.message || 'Translation failed');
+      sendToPopup('translation-result', { error: message });
+    }
+  } finally {
+    hotkeyBusy = false;
   }
 }
 
