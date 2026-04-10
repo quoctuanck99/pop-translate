@@ -26,7 +26,9 @@ async function translate(text, settings) {
     max_tokens: 1000
   });
 
-  return response.choices[0].message.content.trim();
+  const content = response.choices?.[0]?.message?.content;
+  if (!content) throw new Error('Empty response from OpenAI');
+  return content.trim();
 }
 
 module.exports = { translate };
