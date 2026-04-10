@@ -4,7 +4,6 @@ const {
   nativeImage, screen
 } = require('electron');
 const path = require('path');
-const { execSync } = require('child_process');
 const store = require('./store');
 const { translate } = require('./translator');
 
@@ -126,24 +125,10 @@ async function handleHotkey() {
   hotkeyBusy = true;
 
   try {
-    const previous = clipboard.readText();
-    let selected;
+    const text = clipboard.readText();
 
-    try {
-      execSync(`osascript -e 'tell application "System Events" to keystroke "c" using command down'`);
-    } catch {
-      console.error('Pop Translate: Accessibility permission required — go to System Settings → Privacy & Security → Accessibility and add Electron.app from node_modules/electron/dist/');
-      return;
-    } finally {
-      // always restore clipboard even if execSync throws
-    }
-
-    await new Promise(r => setTimeout(r, 150));
-    selected = clipboard.readText();
-    clipboard.writeText(previous);
-
-    if (!selected || !selected.trim() || selected === previous) {
-      console.log('Pop Translate: no new text detected — select text before pressing the hotkey');
+    if (!text || !text.trim()) {
+      console.log('Pop Translate: clipboard is empty — copy text first (Cmd+C), then press the hotkey');
       return;
     }
 
@@ -154,7 +139,7 @@ async function handleHotkey() {
     const settings = store.store;
 
     try {
-      const translation = await translate(selected, settings);
+      const translation = await translate(text, settings);
       const src = settings.sourceLang === 'auto' ? 'Auto' : settings.sourceLang.toUpperCase();
       const tgt = settings.targetLang.toUpperCase();
       sendToPopup('translation-result', { translation, langLabel: `${src} → ${tgt}` });
