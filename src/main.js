@@ -126,20 +126,18 @@ async function handleHotkey() {
   hotkeyBusy = true;
 
   try {
-    const previous = clipboard.readText();
-
+    let text;
     try {
-      execSync(`osascript -e 'tell application "System Events" to tell (first process whose frontmost is true) to keystroke "c" using command down'`);
-    } catch {
-      console.error('Pop Translate: Accessibility permission denied — add Terminal.app to System Settings → Privacy & Security → Accessibility');
+      // Read selected text directly via macOS Accessibility API — no clipboard needed
+      text = execSync(
+        `osascript -l JavaScript -e 'ObjC.import("AppKit"); var s=$.AXUIElementCreateSystemWide(); var f=Ref(); if($.AXUIElementCopyAttributeValue(s,"AXFocusedUIElement",f)!==0){""}else{var t=Ref(); if($.AXUIElementCopyAttributeValue(f[0],"AXSelectedText",t)!==0){""}else{ObjC.unwrap(t[0])||""}}'`
+      ).toString().trim();
+    } catch (e) {
+      console.error('Pop Translate: failed to read selected text:', e.message);
       return;
     }
 
-    await new Promise(r => setTimeout(r, 150));
-    const text = clipboard.readText();
-    clipboard.writeText(previous);
-
-    if (!text || !text.trim() || text === previous) {
+    if (!text || !text.trim()) {
       console.log('Pop Translate: no text selected — select text before pressing the hotkey');
       return;
     }
