@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+      background: #252540;
+      color: #e0e0e0;
+      border-radius: 10px;
+      overflow: hidden;
+    }
+    .card { padding: 14px 16px; }
+    .lang-label {
+      font-size: 10px;
+      color: #888;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 8px;
+    }
+    #content {
+      font-size: 14px;
+      line-height: 1.5;
+      margin-bottom: 12px;
+      max-height: 120px;
+      overflow-y: auto;
+    }
+    #content.translation { color: #e0e0e0; user-select: text; }
+    #content.error { color: #ff6b6b; }
+    #content.loading { color: #888; font-style: italic; }
+    .actions { display: flex; align-items: center; gap: 12px; }
+    .btn-copy {
+      font-size: 11px;
+      color: #4a90d9;
+      cursor: pointer;
+      background: none;
+      border: none;
+      padding: 0;
+    }
+    .btn-copy:hover { text-decoration: underline; }
+    .btn-dismiss {
+      font-size: 11px;
+      color: #888;
+      cursor: pointer;
+      background: none;
+      border: none;
+      padding: 0;
+      margin-left: auto;
+    }
+    .btn-dismiss:hover { color: #ccc; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <div class="lang-label" id="lang-label">Pop Translate</div>
+    <div class="loading" id="content">Translating...</div>
+    <div class="actions">
+      <button class="btn-copy" id="btn-copy" style="display:none">📋 Copy</button>
+      <button class="btn-dismiss" id="btn-dismiss">✕ Dismiss</button>
+    </div>
+  </div>
+  <script src="popup.js"></script>
+</body>
+</html>
