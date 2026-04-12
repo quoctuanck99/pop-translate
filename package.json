@@ -22,7 +22,9 @@
         { "target": "dmg", "arch": ["universal"] }
       ],
       "extendInfo": {
-        "LSUIElement": true
+        "LSUIElement": true,
+        "NSAppleEventsUsageDescription": "Pop Translate needs this to simulate Cmd+C and read your selected text.",
+        "NSAccessibilityUsageDescription": "Pop Translate needs Accessibility access to capture selected text from other apps."
       }
     },
     "dmg": {
