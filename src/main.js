@@ -24,9 +24,9 @@ function createTray() {
   // Empty image + text title is simplest for menu bar utilities
   tray = new Tray(nativeImage.createEmpty());
   tray.setTitle('🌐');
-  tray.setToolTip('Pop Translate');
+  tray.setToolTip('Wordsmith');
   tray.setContextMenu(Menu.buildFromTemplate([
-    { label: 'Pop Translate', enabled: false },
+    { label: 'Wordsmith', enabled: false },
     { type: 'separator' },
     { label: 'Settings', click: openSettings },
     { type: 'separator' },
@@ -94,7 +94,7 @@ function openSettings() {
     width: 420,
     height: 580,
     resizable: false,
-    title: 'Pop Translate Settings',
+    title: 'Wordsmith Settings',
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
       contextIsolation: true,
@@ -139,7 +139,7 @@ async function handleHotkey() {
 
   try {
     if (!lastFrontApp) {
-      console.log('Pop Translate: no foreground app detected yet');
+      console.log('Wordsmith: no foreground app detected yet');
       return;
     }
 
@@ -159,12 +159,12 @@ async function handleHotkey() {
       clipboard.writeText(previous);
       text = copied;
     } catch (e) {
-      console.error('Pop Translate: failed to simulate Cmd+C:', e.message);
+      console.error('Wordsmith: failed to simulate Cmd+C:', e.message);
       return;
     }
 
     if (!text || !text.trim()) {
-      console.log('Pop Translate: no text selected — select text before pressing the hotkey');
+      console.log('Wordsmith: no text selected — select text before pressing the hotkey');
       return;
     }
 
@@ -196,7 +196,7 @@ async function handleRephraseHotkey() {
 
   try {
     if (!lastFrontApp) {
-      console.log('Pop Translate: no foreground app detected yet');
+      console.log('Wordsmith: no foreground app detected yet');
       return;
     }
 
@@ -215,12 +215,12 @@ async function handleRephraseHotkey() {
       clipboard.writeText(previous);
       text = copied;
     } catch (e) {
-      console.error('Pop Translate: failed to simulate Cmd+C:', e.message);
+      console.error('Wordsmith: failed to simulate Cmd+C:', e.message);
       return;
     }
 
     if (!text || !text.trim()) {
-      console.log('Pop Translate: no text selected — select text before pressing the hotkey');
+      console.log('Wordsmith: no text selected — select text before pressing the hotkey');
       return;
     }
 

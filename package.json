@@ -1,7 +1,7 @@
 {
-  "name": "pop-translate",
+  "name": "wordsmith",
   "version": "1.0.0",
-  "description": "macOS menu bar translation utility",
+  "description": "macOS menu bar translation and grammar fix utility",
   "main": "src/main.js",
   "scripts": {
     "start": "electron .",
@@ -10,8 +10,8 @@
     "build:x64": "electron-builder --mac --x64"
   },
   "build": {
-    "appId": "com.quoctuanck99.pop-translate",
-    "productName": "Pop Translate",
+    "appId": "com.quoctuanck99.wordsmith",
+    "productName": "Wordsmith",
     "files": [
       "src/**/*",
       "package.json"
@@ -23,12 +23,12 @@
       ],
       "extendInfo": {
         "LSUIElement": true,
-        "NSAppleEventsUsageDescription": "Pop Translate needs this to simulate Cmd+C and read your selected text.",
-        "NSAccessibilityUsageDescription": "Pop Translate needs Accessibility access to capture selected text from other apps."
+        "NSAppleEventsUsageDescription": "Wordsmith needs this to simulate Cmd+C and read your selected text.",
+        "NSAccessibilityUsageDescription": "Wordsmith needs Accessibility access to capture selected text from other apps."
       }
     },
     "dmg": {
-      "title": "Pop Translate"
+      "title": "Wordsmith"
     }
   },
   "dependencies": {
