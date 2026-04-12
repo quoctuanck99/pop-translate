@@ -145,6 +145,9 @@ async function handleHotkey() {
 
     let text;
     try {
+      // Wait for hotkey modifiers to be physically released before simulating Cmd+C,
+      // otherwise browsers see Cmd+Shift+C and open DevTools.
+      await new Promise(r => setTimeout(r, 150));
       const previous = clipboard.readText();
       execSync(
         `osascript -e 'tell application "System Events" to tell process "${lastFrontApp}" to keystroke "c" using command down'`,
@@ -199,6 +202,9 @@ async function handleRephraseHotkey() {
 
     let text;
     try {
+      // Wait for hotkey modifiers to be physically released before simulating Cmd+C,
+      // otherwise browsers see Cmd+Shift+C and open DevTools.
+      await new Promise(r => setTimeout(r, 150));
       const previous = clipboard.readText();
       execSync(
         `osascript -e 'tell application "System Events" to tell process "${lastFrontApp}" to keystroke "c" using command down'`,
