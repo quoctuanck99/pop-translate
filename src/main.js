@@ -6,7 +6,7 @@ const {
 const path = require('path');
 const { execSync } = require('child_process');
 const store = require('./store');
-const { translate } = require('./translator');
+const { translate, rephrase } = require('./translator');
 
 // No dock icon — menu bar utility only
 app.dock.hide();
@@ -92,7 +92,7 @@ function openSettings() {
   }
   settingsWindow = new BrowserWindow({
     width: 420,
-    height: 530,
+    height: 580,
     resizable: false,
     title: 'Pop Translate Settings',
     webPreferences: {
@@ -123,11 +123,14 @@ function startFrontAppPoller() {
 
 // ─── Global Hotkey ───────────────────────────────────────────────────────────
 
-function registerHotkey() {
+function registerHotkeys() {
   globalShortcut.unregisterAll();
   const hotkey = store.get('hotkey');
-  const ok = globalShortcut.register(hotkey, handleHotkey);
-  if (!ok) console.error(`Failed to register hotkey: ${hotkey}`);
+  const rephraseHotkey = store.get('rephraseHotkey');
+  if (!globalShortcut.register(hotkey, handleHotkey))
+    console.error(`Failed to register hotkey: ${hotkey}`);
+  if (!globalShortcut.register(rephraseHotkey, handleRephraseHotkey))
+    console.error(`Failed to register rephrase hotkey: ${rephraseHotkey}`);
 }
 
 async function handleHotkey() {
@@ -184,15 +187,65 @@ async function handleHotkey() {
   }
 }
 
+async function handleRephraseHotkey() {
+  if (!popupReady || hotkeyBusy) return;
+  hotkeyBusy = true;
+
+  try {
+    if (!lastFrontApp) {
+      console.log('Pop Translate: no foreground app detected yet');
+      return;
+    }
+
+    let text;
+    try {
+      const previous = clipboard.readText();
+      execSync(
+        `osascript -e 'tell application "System Events" to tell process "${lastFrontApp}" to keystroke "c" using command down'`,
+        { timeout: 500 }
+      );
+      await new Promise(r => setTimeout(r, 200));
+      const copied = clipboard.readText();
+      clipboard.writeText(previous);
+      text = copied;
+    } catch (e) {
+      console.error('Pop Translate: failed to simulate Cmd+C:', e.message);
+      return;
+    }
+
+    if (!text || !text.trim()) {
+      console.log('Pop Translate: no text selected — select text before pressing the hotkey');
+      return;
+    }
+
+    showPopupNearCursor();
+    sendToPopup('translation-result', { loading: true });
+
+    const settings = store.store;
+
+    try {
+      const result = await rephrase(text, settings);
+      sendToPopup('translation-result', { translation: result, langLabel: 'Grammar Fix' });
+    } catch (err) {
+      console.error('Rephrase error:', err);
+      const message = err.message === 'NO_API_KEY'
+        ? 'Please set your API key in Settings'
+        : (err.message || 'Rephrase failed');
+      sendToPopup('translation-result', { error: message });
+    }
+  } finally {
+    hotkeyBusy = false;
+  }
+}
+
 // ─── IPC Handlers ────────────────────────────────────────────────────────────
 
 ipcMain.handle('get-settings', () => store.store);
 
 ipcMain.handle('save-settings', (_, settings) => {
-  const prevHotkey = store.get('hotkey');
   store.set(settings);
   app.setLoginItemSettings({ openAtLogin: settings.launchAtStartup });
-  if (settings.hotkey !== prevHotkey) registerHotkey();
+  registerHotkeys();
 });
 
 ipcMain.handle('copy-text', (_, text) => clipboard.writeText(text));
@@ -207,7 +260,7 @@ ipcMain.on('close-settings', () => {
 app.whenReady().then(() => {
   createTray();
   createPopupWindow();
-  registerHotkey();
+  registerHotkeys();
   startFrontAppPoller();
 });
 

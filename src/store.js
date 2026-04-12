@@ -8,6 +8,7 @@ const store = new Store({
     targetLang: { type: 'string', default: 'vi' },
     tone: { type: 'string', default: 'casual' },
     hotkey: { type: 'string', default: 'CommandOrControl+Shift+T' },
+    rephraseHotkey: { type: 'string', default: 'CommandOrControl+Shift+E' },
     launchAtStartup: { type: 'boolean', default: false }
   }
 });
